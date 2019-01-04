@@ -35,12 +35,18 @@ my_gpg_ids:
     email address or a GPG ID. The output files will be encrypted with this key 
     as well as the keys of the intended recipients.
 
+name_template:
+
+    A python format string that specifies how the packet directory should be 
+    named. It can include two named parameters, *name* and *now*. *name* is the 
+    name of a recipient and now is and Arrow time object.
+
 recipients:
 
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
 
-Here is an example config file:
+Here is an example config file::
 
     my_gpg_ids = 'odin@norse-gods.com'
     name_template = '{name}-{now:YYMMDD}'
