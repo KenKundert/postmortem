@@ -5,13 +5,13 @@ PostMortem: Generates Packets of Useful Information for Partners and Dependents 
 | Released: 2019-01-03
 |
 
-*PostMortem* works with *Avendesora* to produce packets of information for 
-partners and dependents to help them carry on after your death. Primarily 
-*PostMortem* queries *Avendesora* to produce an encrypted document that contains 
-information about all of your essential accounts including security credentials 
-such as usernames and passcodes. It also can include related pre-prepared 
-documents such as the legal documents that establish and control your estate 
-plan.
+*PostMortem* works with `Avendesora <https://avendesora.readthedocs.io>`_ to 
+produce packets of information for partners and dependents to help them carry on 
+after your death or incapacitation.  Primarily *PostMortem* queries *Avendesora* 
+to produce an encrypted document that contains information about all of your 
+essential accounts including security credentials such as usernames and 
+passcodes. It also can include related pre-prepared documents such as the legal 
+documents that establish and control your estate.
 
 Your partners and dependents do not need *PostMortem* to access their documents, 
 however they must be capable of using *GPG* and have a GPG encryption key.
