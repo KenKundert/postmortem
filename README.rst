@@ -1,7 +1,7 @@
 PostMortem: Generates Packets of Useful Information for Partners and Dependents to be Opened Upon Death
 =======================================================================================================
 
-| Version: 0.0.0
+| Version: 0.1.0
 | Released: 2019-01-31
 |
 
