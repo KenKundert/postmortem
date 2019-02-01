@@ -2,29 +2,31 @@
 # Description {{{1
 """Postmortem
 
-Generate an account summary that includes complete account information, 
-including secrets, for selected accounts. This summary should allow the 
-recipients to access your accounts. The summaries are intended to be given to 
+Generate an account summary that includes complete account information,
+including secrets, for selected accounts. This summary should allow the
+recipients to access your accounts. The summaries are intended to be given to
 the recipients after you die.
 
 Usage:
     postmortem [options] [<recipients>...]
 
 Options:
-    -s, --send  send encrypted packet to recipient
+    -s, --send    send encrypted packet to recipient
+    -r, --redact  redact secrets
 
-Choose from: {available}.  If no recipients are specified, then summaries will 
+Choose from: {available}.  If no recipients are specified, then summaries will
 be generated for all recipients.
 
-A description of how to configure and use this program can be found at 
-`<https://avendesora.readthedocs.io/en/latest/api.html#example-postmortem-summaries>_.
+A description of how to configure and use this program can be found at
+https://avendesora.readthedocs.io/en/latest/api.html#example-postmortem-summaries.
 """
 
 # Imports {{{1
 from avendesora import PasswordGenerator, PasswordError
 from avendesora.gpg import PythonFile
 from inform import (
-    Error, conjoin, cull, display, indent, os_error, terminate, warn, is_str
+    Error, conjoin, cull, display, error, indent, os_error, terminate, warn,
+    is_str
 )
 from docopt import docopt
 from appdirs import user_config_dir
@@ -63,6 +65,7 @@ try:
     if not who:
         who = recipients
     send = cmdline['--send']
+    redact = cmdline['--redact']
 
     # Scan accounts and gather information for recipients {{{1
     pw = PasswordGenerator()
@@ -95,18 +98,24 @@ try:
                 lines.append('avendesora names: ' + ', '.join(names))
 
                 # output user fields
-                for key, field in account.get_fields():
-                    if key in [avendesora_recipients_fieldname, 'desc', 'NAME']:
+                for field, keys in account.get_fields():
+                    if field in [avendesora_recipients_fieldname, 'desc', 'NAME']:
                         continue
-                    if field:
-                        lines.append(key + ':')
-                        for k, v in account.get_values(key):
-                            lines += indent(
-                                v.render(('{k}) {d}: {v}', '{k}: {v}'))
-                            ).split('\n')
+                    if keys == [None]:
+                        v = account.get_value(field)
+                        if redact and v.is_secret:
+                            lines += v.render('{n}: <redacted>').split('\n')
+                        else:
+                            lines += v.render('{n}: {v}').split('\n')
                     else:
-                        v = account.get_value(key)
-                        lines += v.render('{n}: {v}').split('\n')
+                        lines.append(field + ':')
+                        for k, v in account.get_values(field):
+                            if redact and v.is_secret:
+                                lines += v.render('{k}: <redacted>').split('\n')
+                            else:
+                                lines += indent(
+                                    v.render(('{k}) {d}: {v}', '{k}: {v}'))
+                                ).split('\n')
                 if name not in accounts:
                     accounts[name] = []
                 accounts[name].append('\n'.join(lines))
@@ -200,6 +209,6 @@ except KeyboardInterrupt:
 except (PasswordError, Error) as e:
     e.terminate()
 except OSError as e:
-    raise Error(os_error(e))
+    error(os_error(e))
 
 # vim: set sw=4 sts=4 et:

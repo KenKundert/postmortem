@@ -18,7 +18,9 @@ setup(
     scripts = 'postmortem'.split(),
     install_requires = [
         'appdirs',
-        'avendesora',
+        'avendesora>=1.12',
+            # this should be >=1.13, but it is not out yet; grab the latest
+            # version from github
         'arrow',
         'docopt',
         'inform>=1.14',
