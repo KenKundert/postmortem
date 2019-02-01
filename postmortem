@@ -18,7 +18,7 @@ Choose from: {available}.  If no recipients are specified, then summaries will
 be generated for all recipients.
 
 A description of how to configure and use this program can be found at
-https://avendesora.readthedocs.io/en/latest/api.html#example-postmortem-summaries.
+`GitHub <https://github.com/KenKundert/postmortem>`_.
 """
 
 # Imports {{{1
