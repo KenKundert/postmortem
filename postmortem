@@ -39,8 +39,8 @@ import gnupg
 prog_name = 'postmortem'
 config_filename = 'config'
 shlib_set_prefs(use_inform=True)
-__version__ = '0.0.0'
-__released__ = '2019-01-03'
+__version__ = '0.1.0'
+__released__ = '2019-01-31'
 
 # these can be overridden in the settings file: ~/.config/postmortem
 my_gpg_ids = ''

@@ -2,7 +2,7 @@ PostMortem: Generates Packets of Useful Information for Partners and Dependents 
 =======================================================================================================
 
 | Version: 0.0.0
-| Released: 2019-01-03
+| Released: 2019-01-31
 |
 
 *PostMortem* works with `Avendesora <https://avendesora.readthedocs.io>`_ to 
