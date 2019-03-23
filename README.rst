@@ -23,7 +23,6 @@ Getting Started
 
 You download and install *PostMortem* with::
 
-    git clone https://github.com/KenKundert/postmortem.git
     pip3 install --user postmortem
 
 Once installed, you will need a configuration file. The file is: 
