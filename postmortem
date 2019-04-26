@@ -42,6 +42,37 @@ shlib_set_prefs(use_inform=True)
 __version__ = '0.2.0'
 __released__ = '2019-03-23'
 
+avendesora_header = dedent('''
+    # Transferred Avendesora Accounts
+    #
+    # To adopt these accounts, you should copy this file into your existing
+    # Avendesora directory.  # ~/.config/avendesora (you can rename this file
+    # but keep the extension the same).  Then add the name of this file to the
+    # accounts_files list in the ~/.config/avendesora/accounts_files file.  You
+    # may then find that the account names and aliases from this file conflict
+    # with your current accounts, in which case you can change the names of the
+    # accounts and aliases in this file.
+
+    # Imports {fold}1
+    from avendesora import (
+        # Basics
+        Account, Hide, Hidden, GPG, Script,
+
+        # Character sets
+        exclude, LOWERCASE, UPPERCASE, LETTERS, DIGITS, ALPHANUMERIC,
+        HEXDIGITS, PUNCTUATION, SYMBOLS, WHITESPACE, PRINTABLE, DISTINGUISHABLE,
+
+        # Secrets
+        Password, Passphrase, PIN, Question, MixedPassword, PasswordRecipe,
+        BirthDate, OTP,
+
+        # Account Discovery
+        RecognizeAll, RecognizeAny, RecognizeTitle, RecognizeURL, RecognizeCWD,
+        RecognizeHost, RecognizeUser, RecognizeEnvVar, RecognizeNetwork,
+        RecognizeFile
+    )
+''').format(fold='{''{''{')
+
 # these can be overridden in the settings file: ~/.config/postmortem
 my_gpg_ids = ''
 recipients = dict()
@@ -70,6 +101,7 @@ try:
     # Scan accounts and gather information for recipients {{{1
     pw = PasswordGenerator()
     accounts = {}
+    avendesora_accounts = {}
     for account in pw.all_accounts():
         account_name = account.get_name()
         class_name = account.__name__
@@ -88,6 +120,8 @@ try:
         # gather information for recipients {{{2
         for name, recipient in recipients.items():
             if recipient.get('category') in postmortem_recipients:
+
+                # create textual version of account
                 # output title
                 title = ' - '.join(cull([class_name, description]))
                 lines = [title, len(title)*'=']
@@ -116,9 +150,16 @@ try:
                                 lines += indent(
                                     v.render(('{k}) {d}: {v}', '{k}: {v}'))
                                 ).split('\n')
+
+                # add textual version of account to accounts
                 if name not in accounts:
                     accounts[name] = []
                 accounts[name].append('\n'.join(lines))
+
+                # add code version of account to avendesora_accounts
+                if name not in avendesora_accounts:
+                    avendesora_accounts[name] = []
+                avendesora_accounts[name].append(account.export())
 
     # generate encrypted files that contain accounts for each recipient {{{1
     gpg = gnupg.GPG(gpgbinary='gpg1')
@@ -164,6 +205,21 @@ try:
                 raise Error(os_error(e))
         else:
             warn('no accounts found.', culprit=name)
+
+        # generates avendesora_accounts.gpg
+        if name in avendesora_accounts:
+            content = [avendesora_header.strip()] + avendesora_accounts[name]
+            num_accounts = len(avendesora_accounts[name])
+            encrypted = gpg.encrypt('\n\n'.join(content), idents, armor='always')
+            if not encrypted.ok:
+                raise Error(
+                    'unable to encrypt:', encrypted.stderr, culprit=name
+                )
+            try:
+                file_path = dir_path / 'avendesora_accounts.gpg'
+                file_path.write_text(str(encrypted))
+            except OSError as e:
+                raise Error(os_error(e))
 
         # tar up directory
         tar_path = dir_path.with_suffix('.tgz')
