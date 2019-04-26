@@ -39,8 +39,8 @@ import gnupg
 prog_name = 'postmortem'
 config_filename = 'config'
 shlib_set_prefs(use_inform=True)
-__version__ = '0.2.0'
-__released__ = '2019-03-23'
+__version__ = '0.2.1'
+__released__ = '2019-04-26'
 
 avendesora_header = dedent('''
     # Transferred Avendesora Accounts
