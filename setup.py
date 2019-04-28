@@ -7,7 +7,7 @@ with open('README.rst') as file:
 
 setup(
     name = 'postmortem',
-    version = '0.2.1',
+    version = '0.3.0',
     author = 'Ken Kundert',
     author_email = 'postmortem@nurdletech.com',
     description = 'Produces a package of information for dependents and partners to be opened upon death.',
