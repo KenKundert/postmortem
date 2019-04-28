@@ -88,8 +88,8 @@ contained in *postmortem_recipients*.  *extras* is a list of files or
 directories that are also included in the packet.  Finally, if *networth* is 
 specified and is True, then a networth summary is also included.  *networth* may 
 also be a profile name for the networth command, in which case that profile is 
-used. The networth command is available from `Cryptocurrency 
-<https://github.com/KenKundert/cryptocurrency>`_.
+used. The networth command is available from `GitHub 
+<https://github.com/KenKundert/networth>`_.
 
 
 Running PostMortem
