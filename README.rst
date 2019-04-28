@@ -13,8 +13,10 @@ essential accounts including security credentials such as usernames and
 passcodes. It also can include related pre-prepared documents such as the legal 
 documents that establish and control your estate.
 
-Your partners and dependents do not need *PostMortem* to access their documents, 
-however they must be capable of using *GPG* and have a GPG encryption key.
+Your partners and dependents do not need *PostMortem* or *Avendesora* to access 
+their documents, however they must be capable of using *GPG* and have a GPG 
+encryption key.  However, if they do use happen to use *Avendesora*, they can 
+import the accounts you shared with them directly into *Avendesora*.
 
 Please report all bugs and suggestions to postmortem@nurdletech.com
 
@@ -75,21 +77,23 @@ Here is an example config file::
         ),
     )
 
-An encrypted file is created for each recipient. Each recipient should have an 
-*email* or *gpg_id* that is associated with a known GPG key. Each recipient 
-should all have a category. Your Avendesora accounts will be searched for 
-a field named *postmortem_recipients*, which is a string or list. The account is 
-included in the packet if the recipients category is contained in 
-*postmortem_recipients*.  *extras* is a list of files or directories that are 
-also included in the packet. Finally, if *networth* is specified and is True, 
-then a networth summary is also included. *networth* may also be a profile name 
-for the networth command, in which case that profile is used. The networth 
-command is available from `Cryptocurrency 
+Two encrypted files are created for each recipient, one is an encrypted text 
+file that contains your account information, the other is an encrypted 
+Avendesora account file. Both of these files contain the same information.  Each 
+recipient should have an *email* or *gpg_id* that is associated with a known GPG 
+key. Each recipient should also belong to a category.  Your Avendesora accounts 
+are searched for a field named *postmortem_recipients*, which is a string or 
+list.  The account is included in the packet if the recipients category is 
+contained in *postmortem_recipients*.  *extras* is a list of files or 
+directories that are also included in the packet.  Finally, if *networth* is 
+specified and is True, then a networth summary is also included.  *networth* may 
+also be a profile name for the networth command, in which case that profile is 
+used. The networth command is available from `Cryptocurrency 
 <https://github.com/KenKundert/cryptocurrency>`_.
 
 
 Running PostMortem
-==================
+------------------
 
 You can generate a packet for a particular recipient using::
 
@@ -98,8 +102,12 @@ You can generate a packet for a particular recipient using::
 This creates the encrypted file that contains the packet. The packet can be 
 extracted with::
 
-    gpg -d thor-190101.tgz.gpg > thor-190101.tgz
-    tar xf thor-190101.tgz
+    gpg -d -o thor-190101.tgz thor-190101.tgz.gpg
+    tar zxf thor-190101.tgz
+
+or, in a single step using::
+
+    gpg -d -o - thor-190101.tgz.gpg | tar zxf -
 
 You can have *PostMortem* send the packet directly using email if *email* is 
 given in the configuration file using::
@@ -108,3 +116,28 @@ given in the configuration file using::
 
 Finally, if you do not specify a recipient, packets are created for all known 
 recipients.
+
+
+Importing Accounts into Avendesora
+----------------------------------
+
+Once you have extracted the files from a packet you will see a file named 
+*avendesora_acounts.gpg*.  This is an *Avendesora* accounts file. If you use 
+*Avendesora* you can import the accounts using these two steps:
+
+1. Copy the file into your *Avendesora* accounts directory. You may rename the 
+   file, but keep the extension the same.  For example::
+
+       mv avendesora_acounts.gpg ~/.config/avendesora/parents.gpg
+
+2. Edit the *Avendesora* accounts file and add your new file to the 
+   *accounts_files* list::
+
+       vi ~/.config/avendesora/accounts_files
+
+Once you have done this you may find that there are conflicting names or aliases 
+for your *Avendesora* accounts. For example, if both you and your parents use 
+*Nordea* bank, the name *nordea* might conflict. In this case you should adjust 
+the names and aliases used in your newly imported accounts file. None of the 
+secrets in the imported file are generated, and so change the account names in 
+this file will change the underlying secrets.

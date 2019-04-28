@@ -18,13 +18,11 @@ setup(
     scripts = 'postmortem'.split(),
     install_requires = [
         'appdirs',
-        'avendesora>=1.13',
-            # this should be >=1.14, but it is not out yet; grab the latest
-            # version from github
+        'avendesora>=1.14',
         'arrow',
         'docopt',
-        'inform>=1.14',
-        'python-gnupg>=0.4.3',
+        'inform>=1.16',
+        'python-gnupg>=0.4.4',
             # Be careful.  There's a package called 'gnupg' that's an 
             # incompatible fork of 'python-gnupg'.  If both are installed, the 
             # user will probably have compatibility issues.

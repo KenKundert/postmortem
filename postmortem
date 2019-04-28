@@ -18,7 +18,11 @@ Choose from: {available}.  If no recipients are specified, then summaries will
 be generated for all recipients.
 
 A description of how to configure and use this program can be found at
-`GitHub <https://github.com/KenKundert/postmortem>`_.
+github.com/KenKundert/postmortem.
+
+You can unpack an encrypted output file using::
+
+    gpg -d -o - name.tgz.gpg | tar zxf -
 """
 
 # Imports {{{1
@@ -43,15 +47,21 @@ __version__ = '0.2.1'
 __released__ = '2019-04-26'
 
 avendesora_header = dedent('''
-    # Transferred Avendesora Accounts
+    # Exported Avendesora Accounts
     #
     # To adopt these accounts, you should copy this file into your existing
-    # Avendesora directory.  # ~/.config/avendesora (you can rename this file
+    # Avendesora directory: ~/.config/avendesora (you can rename this file
     # but keep the extension the same).  Then add the name of this file to the
     # accounts_files list in the ~/.config/avendesora/accounts_files file.  You
     # may then find that the account names and aliases from this file conflict
     # with your current accounts, in which case you can change the names of the
     # accounts and aliases in this file.
+    #
+    # Exported accounts should only be used for archival purposes. Any generated
+    # secrets these accounts once contained have all be converted to obscured
+    # secrets. If, at some point, it becomes necessary to change a secret, the
+    # secret should be converted back to a generated secret to preserve its
+    # unpredictability.
 
     # Imports {fold}1
     from avendesora import (
@@ -157,9 +167,10 @@ try:
                 accounts[name].append('\n'.join(lines))
 
                 # add code version of account to avendesora_accounts
-                if name not in avendesora_accounts:
-                    avendesora_accounts[name] = []
-                avendesora_accounts[name].append(account.export())
+                if not redact:
+                    if name not in avendesora_accounts:
+                        avendesora_accounts[name] = []
+                    avendesora_accounts[name].append(account.export())
 
     # generate encrypted files that contain accounts for each recipient {{{1
     gpg = gnupg.GPG(gpgbinary='gpg1')
@@ -215,11 +226,12 @@ try:
                 raise Error(
                     'unable to encrypt:', encrypted.stderr, culprit=name
                 )
-            try:
-                file_path = dir_path / 'avendesora_accounts.gpg'
-                file_path.write_text(str(encrypted))
-            except OSError as e:
-                raise Error(os_error(e))
+            if not redact:
+                try:
+                    file_path = dir_path / 'avendesora_accounts.gpg'
+                    file_path.write_text(str(encrypted))
+                except OSError as e:
+                    raise Error(os_error(e))
 
         # tar up directory
         tar_path = dir_path.with_suffix('.tgz')
