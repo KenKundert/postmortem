@@ -173,7 +173,7 @@ try:
                     avendesora_accounts[name].append(account.export())
 
     # generate encrypted files that contain accounts for each recipient {{{1
-    gpg = gnupg.GPG(gpgbinary='gpg1')
+    gpg = gnupg.GPG()
     for name, recipient in recipients.items():
         if who and name not in who:
             continue
