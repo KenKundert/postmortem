@@ -30,19 +30,35 @@ You download and install *PostMortem* with::
 Once installed, you will need a configuration file. The file is: 
 ~/.config/postmortem/config and should contain the following fields.
 
-my_gpg_ids:
+**my_gpg_ids**:
 
     A string that contains an identifier for your GPG key. This could be your 
     email address or a GPG ID. The output files will be encrypted with this key 
     as well as the keys of the intended recipients.
 
-name_template:
+**sign_with**:
+
+    A string that contains an identifier of the GPG key you wish to use when 
+    signing the generated archives.  If not given, your archives are not signed.  
+    You will also need to specify *avendesora_gpg_passphrase_account* so that 
+    your key can be unlocked.
+
+**avendesora_gpg_passphrase_account**:
+
+    The name of the account that holds the passphrase of the GPG signing key.
+
+**avendesora_gpg_passphrase_field**:
+
+    The name of the account field that holds the passphrase of the GPG signing 
+    key.  If not given, it is assumed to be a passcode field.
+
+**name_template**:
 
     A python format string that specifies how the packet directory should be 
     named. It can include two named parameters, *name* and *now*. *name* is the 
     name of a recipient and now is and Arrow time object.
 
-recipients:
+**recipients**:
 
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
@@ -141,3 +157,24 @@ for your *Avendesora* accounts. For example, if both you and your parents use
 the names and aliases used in your newly imported accounts file. None of the 
 secrets in the imported file are generated, and so change the account names in 
 this file will change the underlying secrets.
+
+
+Releases
+--------
+
+**Latest Development Version**:
+    | Version: 0.3.0
+    | Released: 2019-04-28
+
+**0.4 (2020-03-06)**:
+    - Add README to repository.
+    - Sign the archives, generate the unpack script.
+
+**0.3 (2019-04-28)**:
+    - Add generation of avendesora_accounts.gpg file.
+
+**0.2 (2019-03-23)**:
+
+**0.0 (2019-01-31)**:
+    - Initial version
+

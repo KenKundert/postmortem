@@ -34,7 +34,7 @@ from inform import (
 )
 from docopt import docopt
 from appdirs import user_config_dir
-from shlib import to_path, mkdir, cp, rm, set_prefs as shlib_set_prefs, Run
+from shlib import Run, to_path, mkdir, cp, rm, set_prefs as shlib_set_prefs
 from textwrap import dedent
 import arrow
 import gnupg
@@ -83,14 +83,53 @@ avendesora_header = dedent('''
     )
 ''').format(fold='{''{''{')
 
+unpack_script = dedent('''
+    #!/bin/bash
+
+    if [ $# -le 0 ]; then
+        echo 'usage:'
+        echo '    unpack <archive>.gpg ...'
+        exit
+    fi
+    echo
+
+    while [ $# -gt 0 ]
+    do
+        src="$1"
+        tarfile="${src%.*}"
+        archive="${tarfile%.*}"
+        echo "=== $src --> $archive ==="
+        gpg -d -o "$tarfile" "$src"
+        tar xf "$tarfile"
+        rm "$tarfile"
+        echo
+        shift
+    done
+''').lstrip()
+
+readme_contents = dedent('''
+    Run unpack to decrypt and unpack your archive using::
+
+        ./unpack <yourname>-<date>.tgz.gpg
+
+    It will create a directory <yourname> that contains your information.
+    This directory contains sensitive information, so keep it secure.
+''').lstrip()
+
 # these can be overridden in the settings file: ~/.config/postmortem
 my_gpg_ids = ''
+sign_with = None
 recipients = dict()
 avendesora_value_fieldname = 'estimated_value'
 avendesora_recipients_fieldname = 'postmortem_recipients'
-now = arrow.now()
+avendesora_gpg_passphrase_account = None
+avendesora_gpg_passphrase_field = None
+unpack_script_name = 'unpack'
+readme_name = 'README'
 
 try:
+    now = arrow.now()
+
     # Read settings {{{1
     config_filepath = to_path(user_config_dir(prog_name), config_filename)
     if config_filepath.exists():
@@ -174,6 +213,16 @@ try:
 
     # generate encrypted files that contain accounts for each recipient {{{1
     gpg = gnupg.GPG()
+    if sign_with and avendesora_gpg_passphrase_account:
+        gpg_account = pw.get_account(avendesora_gpg_passphrase_account)
+        if avendesora_gpg_passphrase_field:
+            gpg_passphrase = account.get_value(avendesora_gpg_passphrase_field)
+        else:
+            gpg_passphrase = account.get_passcode()
+        gpg_passphrase = str(gpg_passphrase.value)
+    else:
+        gpg_passphrase = None
+
     for name, recipient in recipients.items():
         if who and name not in who:
             continue
@@ -239,7 +288,10 @@ try:
 
         # sign and encrypt tarfile
         tar_contents = tar_path.read_bytes()
-        encrypted = gpg.encrypt(tar_contents, idents, armor='always')
+        encrypted = gpg.encrypt(
+            tar_contents, idents, sign=sign_with, passphrase=gpg_passphrase, 
+            armor='always'
+        )
         if not encrypted.ok:
             raise Error(
                 'unable to encrypt:', encrypted.stderr, culprit=name
@@ -249,6 +301,18 @@ try:
 
         # remove intermediate files & dirs
         rm(dir_path, tar_path)
+
+        # save unpack script
+        if unpack_script_name:
+            unpack = to_path(unpack_script_name)
+            unpack.write_text(unpack_script)
+            unpack.chmod(0o755)
+
+        # save readme
+        if readme_name:
+            readme = to_path(readme_name)
+            readme.write_text(readme_contents)
+            readme.chmod(0o755)
 
         # send packet
         if send and recipient.get('email'):
