@@ -26,14 +26,14 @@ You can unpack an encrypted output file using::
 """
 
 # Imports {{{1
+from appdirs import user_config_dir
 from avendesora import PasswordGenerator, PasswordError
-from avendesora.gpg import PythonFile
+from docopt import docopt
 from inform import (
     Error, conjoin, cull, display, error, indent, os_error, terminate, warn,
     is_str
 )
-from docopt import docopt
-from appdirs import user_config_dir
+import nestedtext as nt
 from shlib import Run, to_path, mkdir, cp, rm, set_prefs as shlib_set_prefs
 from textwrap import dedent
 import arrow
@@ -41,7 +41,7 @@ import gnupg
 
 # Settings {{{1
 prog_name = 'postmortem'
-config_filename = 'config'
+config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
 __version__ = '0.4.0'
 __released__ = '2020-03-06'
@@ -133,9 +133,9 @@ try:
     # Read settings {{{1
     config_filepath = to_path(user_config_dir(prog_name), config_filename)
     if config_filepath.exists():
-        settings = PythonFile(config_filepath)
-        settings.initialize()
-        locals().update(settings.run())
+        settings = nt.load(config_filepath)
+        settings = {k.replace(' ', '_'): v for k, v in settings.items()}
+        locals().update(settings)
     else:
         warn('no configuration file found.')
 
@@ -157,7 +157,10 @@ try:
         description = account.get_scalar('desc', None, None)
 
         # summarize account values {{{2
-        data = account.get_composite(avendesora_value_fieldname)
+        data = account.get_composite('_' + avendesora_value_fieldname)
+        if not data:
+            data = account.get_composite(avendesora_value_fieldname)
+
         postmortem_recipients = account.get_scalar(avendesora_recipients_fieldname, default=None)
         if data and not postmortem_recipients:
             warn('no recipients.', culprit= account.get_name())
@@ -213,6 +216,7 @@ try:
 
     # generate encrypted files that contain accounts for each recipient {{{1
     gpg = gnupg.GPG()
+    gpg.encoding = 'utf-8'
     if sign_with and avendesora_gpg_passphrase_account:
         gpg_account = pw.get_account(avendesora_gpg_passphrase_account)
         if avendesora_gpg_passphrase_field:
@@ -235,7 +239,11 @@ try:
         )
 
         # copy in extras
-        for each in recipient.get('extras', []):
+        extras = recipient.get('extras', [])
+        if is_str(extras) and extras[0] == '@':
+            key = extras[1:].replace(' ', '_')
+            extras = locals()[key]
+        for each in extras:
             cp(each, dir_path)
 
         # generate networth report

@@ -166,6 +166,8 @@ Releases
     | Version: 0.4.0
     | Released: 2020-03-06
 
+    - Switch to using NestedText for config file.
+
 **0.4 (2020-03-06)**:
     - Add README to repository.
     - Sign the archives, generate the unpack script.

@@ -23,6 +23,7 @@ setup(
         'arrow',
         'docopt',
         'inform>=1.16',
+        'nestedtext',
         'python-gnupg>=0.4.4',
             # Be careful.  There's a package called 'gnupg' that's an 
             # incompatible fork of 'python-gnupg'.  If both are installed, the 
