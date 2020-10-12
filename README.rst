@@ -160,21 +160,21 @@ this file will change the underlying secrets.
 Releases
 --------
 
-**Latest Development Version**:
+Latest Development Version
     | Version: 0.4.1
     | Released: 2020-10-12
 
+0.5 (2020-10-12)
     - Switch to using NestedText for config file.
 
-**0.4 (2020-03-06)**:
+0.4 (2020-03-06)
     - Add README to repository.
     - Sign the archives, generate the unpack script.
 
-**0.3 (2019-04-28)**:
+0.3 (2019-04-28)
     - Add generation of avendesora_accounts.gpg file.
 
-**0.2 (2019-03-23)**:
+0.2 (2019-03-23)
 
-**0.0 (2019-01-31)**:
+0.0 (2019-01-31)
     - Initial version
-
