@@ -28,31 +28,31 @@ You download and install *PostMortem* with::
     pip3 install --user postmortem
 
 Once installed, you will need a configuration file. The file is: 
-~/.config/postmortem/config and should contain the following fields.
+~/.config/postmortem/config.nt and should contain the following fields.
 
-**my_gpg_ids**:
+**my gpg ids**:
 
     A string that contains an identifier for your GPG key. This could be your 
     email address or a GPG ID. The output files will be encrypted with this key 
     as well as the keys of the intended recipients.
 
-**sign_with**:
+**sign with**:
 
     A string that contains an identifier of the GPG key you wish to use when 
     signing the generated archives.  If not given, your archives are not signed.  
     You will also need to specify *avendesora_gpg_passphrase_account* so that 
     your key can be unlocked.
 
-**avendesora_gpg_passphrase_account**:
+**avendesora gpg passphrase account**:
 
     The name of the account that holds the passphrase of the GPG signing key.
 
-**avendesora_gpg_passphrase_field**:
+**avendesora gpg passphrase field**:
 
     The name of the account field that holds the passphrase of the GPG signing 
     key.  If not given, it is assumed to be a passcode field.
 
-**name_template**:
+**name template**:
 
     A python format string that specifies how the packet directory should be 
     named. It can include two named parameters, *name* and *now*. *name* is the 
@@ -63,35 +63,39 @@ Once installed, you will need a configuration file. The file is:
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
 
+The configuration is a `NestedText <https://nestedtext.org>`_ file.
 Here is an example config file::
 
-    my_gpg_ids = 'odin@norse-gods.com'
-    name_template = '{name}-{now:YYMMDD}'
+    my gpg ids: odin@norse-gods.com
+    sign with: @my gpg ids
+    name template: {name}-{now:YYMMDD}
+    important files:
+        - ~/home/finances/estate
+        - ~/home/will
 
-    recipients = dict(
-        frigg = dict(
-            email = 'frigg@norse-gods.com',
-            category = 'wife',
-            extras = [
-                '~/home/finances/estate
-            ],
-            networth = True,
+    recipients:
+        frigg:
+            email: frigg@norse-gods.com
+            category: wife
+            extras: @important files
+            networth: me
         ),
-        thor = dict(
-            email = 'thor@norse-gods.com',
-            category = 'kids',
-            extras = [
-                '~/home/finances/estate
-            ],
+        thor:
+            email: thor@norse-gods.com
+            category: kids
+            extras: @important files
         ),
-        loki = dict(
-            email = 'loki@norse-gods.com',
-            category = 'kids',
-            extras = [
-                '~/home/finances/estate
-            ],
-        ),
-    )
+        loki:
+            email: loki@norse-gods.com
+            category: kids
+            extras: @important files
+
+Notice that *important files* was defined at the top level, but it is not 
+a *PostMortem* setting. It simply defines a value that will be interpolated into 
+a setting later. The interpolation is done by adding ``@`` to the name of the 
+value. So for example, in the recipients *extras* is specified as ``@important 
+files``. This causes the list of important files to be used as *extras*.  Then 
+same things was done in *sign with*, which interpolated *my gpg ids*.
 
 Two encrypted files are created for each recipient, one is an encrypted text 
 file that contains your account information, the other is an encrypted 
@@ -155,7 +159,7 @@ Once you have done this you may find that there are conflicting names or aliases
 for your *Avendesora* accounts. For example, if both you and your parents use 
 *Nordea* bank, the name *nordea* might conflict. In this case you should adjust 
 the names and aliases used in your newly imported accounts file. None of the 
-secrets in the imported file are generated, and so change the account names in 
+secrets in the imported file are generated, and so changing the account names in 
 this file will change the underlying secrets.
 
 

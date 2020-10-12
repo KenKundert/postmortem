@@ -31,7 +31,7 @@ from avendesora import PasswordGenerator, PasswordError
 from docopt import docopt
 from inform import (
     Error, conjoin, cull, display, error, indent, os_error, terminate, warn,
-    is_str
+    is_str, is_mapping, is_collection, is_str
 )
 import nestedtext as nt
 from shlib import Run, to_path, mkdir, cp, rm, set_prefs as shlib_set_prefs
@@ -127,14 +127,33 @@ avendesora_gpg_passphrase_field = None
 unpack_script_name = 'unpack'
 readme_name = 'README'
 
+def expand_setting(value):
+    # allows macro values to be defined as a top-level setting.
+    # allows macro reference to be found anywhere.
+    if is_str(value):
+        value = value.strip()
+        if value[:1] == '@':
+            value = settings[value[1:].strip()]
+        return value
+    if is_mapping(value):
+        return {k:expand_setting(v) for k, v in value.items()}
+    if is_collection(value):
+        return [expand_setting(v) for v in value]
+    raise NotImplementedError(value)
+
 try:
     now = arrow.now()
 
     # Read settings {{{1
     config_filepath = to_path(user_config_dir(prog_name), config_filename)
     if config_filepath.exists():
+        # load from file
         settings = nt.load(config_filepath)
-        settings = {k.replace(' ', '_'): v for k, v in settings.items()}
+        # expand macros
+        settings = expand_setting(settings)
+        # convert keys to identifiers
+        settings = {'_'.join(k.split()): v for k, v in settings.items()}
+        # add settings to local variables
         locals().update(settings)
     else:
         warn('no configuration file found.')
@@ -239,11 +258,7 @@ try:
         )
 
         # copy in extras
-        extras = recipient.get('extras', [])
-        if is_str(extras) and extras[0] == '@':
-            key = extras[1:].replace(' ', '_')
-            extras = locals()[key]
-        for each in extras:
+        for each in recipient.get('extras', []):
             cp(each, dir_path)
 
         # generate networth report
