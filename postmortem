@@ -43,8 +43,8 @@ import gnupg
 prog_name = 'postmortem'
 config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
-__version__ = '0.4.0'
-__released__ = '2020-03-06'
+__version__ = '0.4.1'
+__released__ = '2020-10-12'
 
 avendesora_header = dedent('''
     # Exported Avendesora Accounts
