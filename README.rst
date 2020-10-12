@@ -30,36 +30,30 @@ You download and install *PostMortem* with::
 Once installed, you will need a configuration file. The file is: 
 ~/.config/postmortem/config.nt and should contain the following fields.
 
-**my gpg ids**:
-
+my gpg ids
     A string that contains an identifier for your GPG key. This could be your 
     email address or a GPG ID. The output files will be encrypted with this key 
     as well as the keys of the intended recipients.
 
-**sign with**:
-
+sign with
     A string that contains an identifier of the GPG key you wish to use when 
     signing the generated archives.  If not given, your archives are not signed.  
     You will also need to specify *avendesora_gpg_passphrase_account* so that 
     your key can be unlocked.
 
-**avendesora gpg passphrase account**:
-
+avendesora gpg passphrase account
     The name of the account that holds the passphrase of the GPG signing key.
 
-**avendesora gpg passphrase field**:
-
+avendesora gpg passphrase field
     The name of the account field that holds the passphrase of the GPG signing 
     key.  If not given, it is assumed to be a passcode field.
 
-**name template**:
-
+name template
     A python format string that specifies how the packet directory should be 
     named. It can include two named parameters, *name* and *now*. *name* is the 
     name of a recipient and now is and Arrow time object.
 
-**recipients**:
-
+recipients
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
 
