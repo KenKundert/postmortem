@@ -349,6 +349,9 @@ try:
                 You can unpack this packet using:
                     gpg --output {tar_path!s} --decrypt {encrypted_tar_path!s}
                     tar xf {tar_path!s}
+
+                See https://github.com/KenKundert/postmortem for information on
+                how to import my accounts into your Avendesora accounts.
             ''')
             cmd = [
                 'mail',
