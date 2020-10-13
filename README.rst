@@ -1,8 +1,8 @@
 PostMortem: Generates Packets of Useful Information for Partners and Dependents to be Opened Upon Death
 =======================================================================================================
 
-| Version: 0.5.0
-| Released: 2020-10-12
+| Version: 0.5.1
+| Released: 2020-10-13
 |
 
 *PostMortem* works with `Avendesora <https://avendesora.readthedocs.io>`_ to 
@@ -160,8 +160,8 @@ Releases
 --------
 
 Latest Development Version
-    | Version: 0.5.0
-    | Released: 2020-10-12
+    | Version: 0.5.1
+    | Released: 2020-10-13
 
     - Rename extras setting to attach.
 
