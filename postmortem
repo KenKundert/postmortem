@@ -257,8 +257,8 @@ try:
           + my_gpg_ids.split()
         )
 
-        # copy in extras
-        for each in recipient.get('extras', []):
+        # copy in attachments
+        for each in recipient.get('attach', []):
             cp(each, dir_path)
 
         # generate networth report

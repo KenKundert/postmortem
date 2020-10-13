@@ -38,7 +38,7 @@ my gpg ids
 sign with
     A string that contains an identifier of the GPG key you wish to use when 
     signing the generated archives.  If not given, your archives are not signed.  
-    You will also need to specify *avendesora_gpg_passphrase_account* so that 
+    You will also need to specify *avendesora gpg passphrase account* so that 
     your key can be unlocked.
 
 avendesora gpg passphrase account
@@ -61,35 +61,34 @@ The configuration is a `NestedText <https://nestedtext.org>`_ file.
 Here is an example config file::
 
     my gpg ids: odin@norse-gods.com
-    sign with: @my gpg ids
+    sign with: @ my gpg ids
     name template: {name}-{now:YYMMDD}
-    important files:
-        - ~/home/finances/estate
-        - ~/home/will
+    estate docs:
+        - ~/home/estate/trust.pdf
+        - ~/home/estate/will.pdf
+        - ~/home/estate/deed-valhalla.pdf
 
     recipients:
         frigg:
             email: frigg@norse-gods.com
             category: wife
-            extras: @important files
-            networth: me
-        ),
+            attach: @ estate docs
+            networth: odin
         thor:
             email: thor@norse-gods.com
             category: kids
-            extras: @important files
-        ),
+            attach: @ estate docs
         loki:
             email: loki@norse-gods.com
             category: kids
-            extras: @important files
+            attach: @ estate docs
 
-Notice that *important files* was defined at the top level, but it is not 
+Notice that *estate docs* was defined at the top level, but it is not 
 a *PostMortem* setting. It simply defines a value that will be interpolated into 
 a setting later. The interpolation is done by adding ``@`` to the name of the 
-value. So for example, in the recipients *extras* is specified as ``@important 
-files``. This causes the list of important files to be used as *extras*.  Then 
-same things was done in *sign with*, which interpolated *my gpg ids*.
+value. So for example, in the recipients *attach* is specified as ``@estate 
+docs``.  This causes the list of estate documents to be used as attachments.  
+The same thing is done in *sign with*, which interpolates *my gpg ids*.
 
 Two encrypted files are created for each recipient, one is an encrypted text 
 file that contains your account information, the other is an encrypted 
@@ -98,7 +97,7 @@ recipient should have an *email* or *gpg_id* that is associated with a known GPG
 key. Each recipient should also belong to a category.  Your Avendesora accounts 
 are searched for a field named *postmortem_recipients*, which is a string or 
 list.  The account is included in the packet if the recipients category is 
-contained in *postmortem_recipients*.  *extras* is a list of files or 
+contained in *postmortem_recipients*.  *attach* is a list of files or 
 directories that are also included in the packet.  Finally, if *networth* is 
 specified and is True, then a networth summary is also included.  *networth* may 
 also be a profile name for the networth command, in which case that profile is 
@@ -163,6 +162,8 @@ Releases
 Latest Development Version
     | Version: 0.5.0
     | Released: 2020-10-12
+
+    - Rename extras setting to attach.
 
 0.5 (2020-10-12)
     - Switch to using NestedText for config file.
