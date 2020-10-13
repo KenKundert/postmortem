@@ -1,8 +1,19 @@
 PostMortem: Generates Packets of Useful Information for Partners and Dependents to be Opened Upon Death
 =======================================================================================================
 
+
+.. image:: https://img.shields.io/pypi/v/postmortem.svg
+    :target: https://pypi.python.org/pypi/postmortem
+
+.. image:: https://img.shields.io/pypi/pyversions/postmortem.svg
+    :target: https://pypi.python.org/pypi/postmortem
+
+
+| Author: Ken Kundert
 | Version: 0.5.1
 | Released: 2020-10-13
+| Please post all questions, suggestions, and bug reports to
+  `Github <https://github.com/KenKundert/postmortem/issues>`_.
 |
 
 *PostMortem* works with `Avendesora <https://avendesora.readthedocs.io>`_ to 
