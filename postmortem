@@ -45,7 +45,7 @@ import gnupg
 prog_name = 'postmortem'
 config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __released__ = '2020-10-13'
 
 # avendesora_header {{{3
