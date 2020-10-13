@@ -30,22 +30,25 @@ from appdirs import user_config_dir
 from avendesora import PasswordGenerator, PasswordError
 from docopt import docopt
 from inform import (
-    Error, conjoin, cull, display, error, indent, os_error, terminate, warn,
-    is_str, is_mapping, is_collection, is_str
+    Error, conjoin, cull, display, fatal, full_stop, indent, os_error, 
+    terminate, warn, is_str, is_mapping, is_collection, is_str
 )
 import nestedtext as nt
 from shlib import Run, to_path, mkdir, cp, rm, set_prefs as shlib_set_prefs
 from textwrap import dedent
+from voluptuous import Schema, Invalid, Extra, Required, REMOVE_EXTRA
 import arrow
 import gnupg
 
 # Settings {{{1
+# constants {{{2
 prog_name = 'postmortem'
 config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
 __version__ = '0.5.1'
 __released__ = '2020-10-13'
 
+# avendesora_header {{{3
 avendesora_header = dedent('''
     # Exported Avendesora Accounts
     #
@@ -83,6 +86,7 @@ avendesora_header = dedent('''
     )
 ''').format(fold='{''{''{')
 
+# unpack_script {{{3
 unpack_script = dedent('''
     #!/bin/bash
 
@@ -107,6 +111,7 @@ unpack_script = dedent('''
     done
 ''').lstrip()
 
+# readme_contents {{{3
 readme_contents = dedent('''
     Run unpack to decrypt and unpack your archive using::
 
@@ -116,6 +121,7 @@ readme_contents = dedent('''
     This directory contains sensitive information, so keep it secure.
 ''').lstrip()
 
+# defaults {{{2
 # these can be overridden in the settings file: ~/.config/postmortem
 my_gpg_ids = ''
 sign_with = None
@@ -127,6 +133,8 @@ avendesora_gpg_passphrase_field = None
 unpack_script_name = 'unpack'
 readme_name = 'README'
 
+# utility functions {{{2
+# expand_settings() {{{3
 def expand_setting(value):
     # allows macro values to be defined as a top-level setting.
     # allows macro reference to be found anywhere.
@@ -141,18 +149,91 @@ def expand_setting(value):
         return [expand_setting(v) for v in value]
     raise NotImplementedError(value)
 
+# functions for setting validation and transformation {{{3
+def to_str(arg):
+    if isinstance(arg, str):
+        return arg
+    raise Invalid('expected text.')
+
+def to_ident(arg):
+    arg = to_str(arg)
+    if len(arg.split()) > 1:
+        raise Invalid('expected simple identifier.')
+    return arg
+
+def to_list(arg):
+    if isinstance(arg, str):
+        return arg.split()
+    if isinstance(arg, dict):
+        raise Invalid('expected list.')
+    return arg
+
+def to_paths(arg):
+    return [Path(p).expanduser() for p in to_list(arg)]
+
+def to_email(arg):
+    user, _, host = arg.partition('@')
+    if '.' in host:
+        return arg
+    raise Invalid('expected email address.')
+
+def to_emails(arg):
+    return [to_email(e) for e in to_list(arg)]
+
+def to_gpg_id(arg):
+    try:
+        return to_email(arg)
+    except Invalid:
+        try:
+            int(arg, base=16)
+            return arg
+        except ValueError:
+            raise Invalid('expected GPG id.')
+
+def to_gpg_ids(arg):
+    return [to_gpg_id(i) for i in to_list(arg)]
+
+# schema {{{2
+schema = Schema(
+    {
+        Required('my gpg ids'): to_gpg_ids,
+        'sign with': to_gpg_id,
+        Required('avendesora gpg passphrase account'): to_str,
+        'avendesora gpg passphrase field': to_str,
+        'name template': to_str,
+        Required('recipients'): {
+            Extra: {
+                Required('category'): to_ident,
+                Required('email'): to_emails,
+                'gpg id': to_gpg_id,
+                'attach': to_paths,
+                'networth': to_ident,
+            }
+        },
+    },
+    extra = REMOVE_EXTRA
+)
+
+
 try:
     now = arrow.now()
 
     # Read settings {{{1
     config_filepath = to_path(user_config_dir(prog_name), config_filename)
     if config_filepath.exists():
+
         # load from file
         settings = nt.load(config_filepath)
+
         # expand macros
         settings = expand_setting(settings)
+
+        # check settings and transform to desired types
+        settings = schema(settings)
+
         # convert keys to identifiers
         settings = {'_'.join(k.split()): v for k, v in settings.items()}
+
         # add settings to local variables
         locals().update(settings)
     else:
@@ -253,8 +334,7 @@ try:
         rm(dir_path)
         mkdir(dir_path)
         idents = (
-            recipient.get('gpg_id', recipient.get('email')).split()
-          + my_gpg_ids.split()
+            recipient.get('gpg_id', recipient.get('email')) + my_gpg_ids
         )
 
         # copy in attachments
@@ -364,9 +444,13 @@ try:
 # process exceptions {{{1
 except KeyboardInterrupt:
     terminate('Killed by user.')
+except nt.NestedTextError as e:
+    e.terminate()
+except Invalid as e:
+    fatal(full_stop(e.msg), culprit=e.path)
 except (PasswordError, Error) as e:
     e.terminate()
 except OSError as e:
-    error(os_error(e))
+    fatal(os_error(e))
 
 # vim: set sw=4 sts=4 et:
