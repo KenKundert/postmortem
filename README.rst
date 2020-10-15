@@ -10,8 +10,8 @@ PostMortem: Generates Packets of Useful Information for Partners and Dependents 
 
 
 | Author: Ken Kundert
-| Version: 0.5.2
-| Released: 2020-10-13
+| Version: 0.6.0
+| Released: 2020-10-14
 | Please post all questions, suggestions, and bug reports to
   `Github Issues <https://github.com/KenKundert/postmortem/issues>`_.
 |
@@ -171,8 +171,8 @@ Releases
 --------
 
 Latest Development Version
-    | Version: 0.5.2
-    | Released: 2020-10-13
+    | Version: 0.6.0
+    | Released: 2020-10-14
 
 0.6 (2020-10-14)
     - Improve sanity checking on settings.
