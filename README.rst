@@ -174,6 +174,8 @@ Latest Development Version
     | Version: 0.5.2
     | Released: 2020-10-13
 
+0.6 (2020-10-14)
+    - Improve sanity checking on settings.
     - Rename extras setting to attach.
 
 0.5 (2020-10-12)
