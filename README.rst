@@ -13,7 +13,7 @@ PostMortem: Generates Packets of Useful Information for Partners and Dependents 
 | Version: 0.5.2
 | Released: 2020-10-13
 | Please post all questions, suggestions, and bug reports to
-  `Github <https://github.com/KenKundert/postmortem/issues>`_.
+  `Github Issues <https://github.com/KenKundert/postmortem/issues>`_.
 |
 
 *PostMortem* works with `Avendesora <https://avendesora.readthedocs.io>`_ to 

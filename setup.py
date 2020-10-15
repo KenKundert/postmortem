@@ -13,6 +13,7 @@ setup(
     author_email = 'postmortem@nurdletech.com',
     description = 'Produces a package of information for dependents and partners to be opened upon death.',
     long_description = readme,
+    long_description_content_type = 'text/x-rst',
     url = 'https://github.com/kenkundert/postmortem',
     download_url = 'https://github.com/kenkundert/postmortem/tarball/master',
     license = 'GPLv3+',
