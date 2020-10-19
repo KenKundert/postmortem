@@ -135,7 +135,7 @@ readme_name = 'README'
 
 # utility functions {{{2
 # expand_settings() {{{3
-def expand_setting(value):
+def expand_settings(value):
     # allows macro values to be defined as a top-level setting.
     # allows macro reference to be found anywhere.
     if is_str(value):
@@ -144,9 +144,9 @@ def expand_setting(value):
             value = settings[value[1:].strip()]
         return value
     if is_mapping(value):
-        return {k:expand_setting(v) for k, v in value.items()}
+        return {k:expand_settings(v) for k, v in value.items()}
     if is_collection(value):
-        return [expand_setting(v) for v in value]
+        return [expand_settings(v) for v in value]
     raise NotImplementedError(value)
 
 # functions for setting validation and transformation {{{3
@@ -182,12 +182,13 @@ def to_emails(arg):
 
 def to_gpg_id(arg):
     try:
-        return to_email(arg)
+        return to_email(arg)      # gpg ID may be an email addres
     except Invalid:
         try:
-            int(arg, base=16)
+            int(arg, base=16)     # if not an email, it must be a hex key
+            assert len(arg) >= 8  # at least 8 characters long
             return arg
-        except ValueError:
+        except (ValueError, AssertionError):
             raise Invalid('expected GPG id.')
 
 def to_gpg_ids(arg):
@@ -226,7 +227,7 @@ try:
         settings = nt.load(config_filepath)
 
         # expand macros
-        settings = expand_setting(settings)
+        settings = expand_settings(settings)
 
         # check settings and transform to desired types
         settings = schema(settings)
