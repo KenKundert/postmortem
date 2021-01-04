@@ -52,6 +52,14 @@ sign with
     You will also need to specify *avendesora gpg passphrase account* so that 
     your key can be unlocked.
 
+cc
+    One or more email addresses. When postmortem packets are sent, these are 
+    added to carbon copy list.
+
+salutation
+    The default sign-off salutation to be used at the end of postmortem packet 
+    emails.  May be overridden in recipients for individual recipients.
+
 avendesora gpg passphrase account
     The name of the account that holds the passphrase of the GPG signing key.
 
@@ -67,6 +75,25 @@ name template
 recipients
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
+
+    category
+        The *postmortem_recipients* category to associate with this recipient.
+
+    email
+        The recipients email address.
+
+    gpg id
+        The recipients GPG identifier. If not give, the email is used.
+
+    attach
+        A list of documents to attach for this recipient.
+
+    networth
+        The networth identifier. If given a networth report for the given 
+        identifier is included, otherwise no networth report is included.
+
+    salutation
+        The sign-off salutation to be used for this recipient.
 
 The configuration is a `NestedText <https://nestedtext.org>`_ file.
 Here is an example config file::

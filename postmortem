@@ -103,28 +103,40 @@ unpack_script = dedent('''
         tarfile="${src%.*}"
         archive="${tarfile%.*}"
         echo "=== $src --> $archive ==="
-        gpg -d -o "$tarfile" "$src"
-        tar xf "$tarfile"
-        rm "$tarfile"
+        gpg -d -o - "$src" | tar xvzf -
         echo
         shift
     done
 ''').lstrip()
 
 # readme_contents {{{3
-readme_contents = dedent('''
+outer_readme_contents = dedent('''
     Run unpack to decrypt and unpack your archive using::
 
         ./unpack <yourname>-<date>.tgz.gpg
 
-    It will create a directory <yourname> that contains your information.
-    This directory contains sensitive information, so keep it secure.
+    It will create a directory <yourname>-<date> that contains your information.
+    This directory contains sensitive information, so keep it secure.  
+    I recommend that you just copy out the information you need, then delete it.
+''').lstrip()
+inner_readme_contents = dedent('''
+    The accounts.gpg file contains information about those of my accounts that 
+    are relevant to you.  All passwords and other secrets are expanded as of the 
+    time this file was created.  Time-based one-time password codes are included 
+    but will be out-of-date and useless.
+
+    The avendesora_accounts.gpg file contains the same information, but in 
+    a form that can be imported into Avendesora. To do so, follow the 
+    instructions at the top of the file.  Once imported, the time-based one-time 
+    passwords will be generated correctly by Avendesora.
 ''').lstrip()
 
 # defaults {{{2
 # these can be overridden in the settings file: ~/.config/postmortem
 my_gpg_ids = ''
 sign_with = None
+salutation = ''
+cc = []
 recipients = dict()
 avendesora_value_fieldname = 'estimated_value'
 avendesora_recipients_fieldname = 'postmortem_recipients'
@@ -202,6 +214,8 @@ schema = Schema(
         Required('avendesora gpg passphrase account'): to_str,
         'avendesora gpg passphrase field': to_str,
         'name template': to_str,
+        'cc': to_list,
+        'salutation': to_str,
         Required('recipients'): {
             Extra: {
                 Required('category'): to_ident,
@@ -209,6 +223,7 @@ schema = Schema(
                 'gpg id': to_gpg_id,
                 'attach': to_paths,
                 'networth': to_ident,
+                'salutation': to_str,
             }
         },
     },
@@ -340,7 +355,16 @@ try:
 
         # copy in attachments
         for each in recipient.get('attach', []):
-            cp(each, dir_path)
+            try:
+                cp(each, dir_path)
+            except OSError as e:
+                warn(os_error(e))
+
+        # save readme
+        if readme_name:
+            readme = to_path(dir_path/readme_name)
+            readme.write_text(inner_readme_contents)
+            readme.chmod(0o600)
 
         # generate networth report
         profile = recipient.get('networth')
@@ -387,8 +411,10 @@ try:
                     raise Error(os_error(e))
 
         # tar up directory
+        Run(['chmod', '-R', 'go-rwx', dir_path], 'soeW')
         tar_path = dir_path.with_suffix('.tgz')
         Run(['tar', 'zcf', tar_path, dir_path], 'soeW')
+        tar_path.chmod(0o600)
 
         # sign and encrypt tarfile
         tar_contents = tar_path.read_bytes()
@@ -402,6 +428,7 @@ try:
             )
         encrypted_tar_path = tar_path.with_suffix('.tgz.gpg')
         encrypted_tar_path.write_text(str(encrypted))
+        encrypted_tar_path.chmod(0o600)
 
         # remove intermediate files & dirs
         rm(dir_path, tar_path)
@@ -410,16 +437,17 @@ try:
         if unpack_script_name:
             unpack = to_path(unpack_script_name)
             unpack.write_text(unpack_script)
-            unpack.chmod(0o755)
+            unpack.chmod(0o700)
 
         # save readme
         if readme_name:
             readme = to_path(readme_name)
-            readme.write_text(readme_contents)
-            readme.chmod(0o755)
+            readme.write_text(outer_readme_contents)
+            readme.chmod(0o600)
 
         # send packet
         if send and recipient.get('email'):
+            the_salutation = recipient.get('salutation', salutation)
             msg = dedent(f'''
                 {name.title()},
                     Attached is a packet of information that should be useful
@@ -428,18 +456,21 @@ try:
                 key.
 
                 You can unpack this packet using:
-                    gpg --output {tar_path!s} --decrypt {encrypted_tar_path!s}
-                    tar xf {tar_path!s}
+                    gpg -d -o - {encrypted_tar_path!s} | tar xf -
 
                 See https://github.com/KenKundert/postmortem for information on
                 how to import my accounts into your Avendesora accounts.
+
+                {the_salutation}
+
             ''')
+            copy_to = 2*len(cc)*['-c']
+            copy_to[1::2] = cc
             cmd = [
                 'mail',
                 '-s', 'postmortem packet',
                 '-a', str(encrypted_tar_path),
-                recipient.get('email')
-            ]
+            ] + copy_to + recipient.get('email')
             Run(cmd, 'soeW', stdin=msg)
 
 # process exceptions {{{1
