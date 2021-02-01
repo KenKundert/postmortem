@@ -22,7 +22,7 @@ github.com/KenKundert/postmortem.
 
 You can unpack an encrypted output file using::
 
-    gpg -d -o - name.tgz.gpg | tar zxf -
+    gpg -d -o - name.tgz.gpg | tar xzf -
 """
 
 # Imports {{{1
@@ -456,7 +456,7 @@ try:
                 key.
 
                 You can unpack this packet using:
-                    gpg -d -o - {encrypted_tar_path!s} | tar xf -
+                    gpg -d -o - {encrypted_tar_path!s} | tar xzf -
 
                 See https://github.com/KenKundert/postmortem for information on
                 how to import my accounts into your Avendesora accounts.
@@ -479,7 +479,9 @@ except KeyboardInterrupt:
 except nt.NestedTextError as e:
     e.terminate()
 except Invalid as e:
-    fatal(full_stop(e.msg), culprit=e.path)
+    paths = '.'.join(e.path)
+    msg = f'{paths}: {e.msg}'
+    fatal(full_stop(msg), culprit=config_filepath)
 except (PasswordError, Error) as e:
     e.terminate()
 except OSError as e:

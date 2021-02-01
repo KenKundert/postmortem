@@ -201,6 +201,9 @@ Latest Development Version
     | Version: 0.7.0
     | Released: 2021-01-03
 
+0.7 (2021-01-03)
+    - Miscellaneous refinements.
+
 0.6 (2020-10-14)
     - Improve sanity checking on settings.
     - Rename extras setting to attach.
