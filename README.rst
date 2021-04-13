@@ -76,8 +76,9 @@ recipients
     A dictionary of dictionary that contains preferences for each of the 
     recipients.
 
-    category
-        The *postmortem_recipients* category to associate with this recipient.
+    categories
+        The *postmortem_recipients* category or categories to associate with 
+        this recipient.
 
     email
         The recipients email address.
@@ -94,6 +95,11 @@ recipients
 
     salutation
         The sign-off salutation to be used for this recipient.
+
+    accounts
+        The expected number of accounts owned by this recipient (optional).
+        A warning is issues if the number of accounts is specified and the 
+        number of accounts found differs from this number.
 
 The configuration is a `NestedText <https://nestedtext.org>`_ file.
 Here is an example config file::

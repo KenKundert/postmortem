@@ -173,12 +173,21 @@ def to_ident(arg):
         raise Invalid('expected simple identifier.')
     return arg
 
+def to_int(arg):
+    try:
+        return int(arg)
+    except ValueError:
+        raise Invalid('expected integer.')
+
 def to_list(arg):
     if isinstance(arg, str):
         return arg.split()
     if isinstance(arg, dict):
         raise Invalid('expected list.')
     return arg
+
+def to_set(arg):
+    return set(to_list(arg))
 
 def to_paths(arg):
     return [to_path(p).expanduser() for p in to_list(arg)]
@@ -218,12 +227,13 @@ schema = Schema(
         'salutation': to_str,
         Required('recipients'): {
             Extra: {
-                Required('category'): to_ident,
+                Required('categories'): to_set,
                 Required('email'): to_emails,
                 'gpg id': to_gpg_id,
                 'attach': to_paths,
                 'networth': to_ident,
                 'salutation': to_str,
+                'accounts': to_int,
             }
         },
     },
@@ -283,11 +293,11 @@ try:
             continue
         if not postmortem_recipients:
             continue
-        postmortem_recipients = postmortem_recipients.split()
+        postmortem_recipients = set(postmortem_recipients.split())
 
         # gather information for recipients {{{2
         for name, recipient in recipients.items():
-            if recipient.get('category') in postmortem_recipients:
+            if recipient.get('categories') & postmortem_recipients:
 
                 # create textual version of account
                 # output title
@@ -380,6 +390,13 @@ try:
         if name in accounts:
             content = accounts[name]
             num_accounts = len(content)
+            expected_num = recipient.get('accounts')
+            if expected_num is not None and num_accounts != expected_num:
+                warn(
+                    f'expected {expected_num} accounts, {num_accounts} found.',
+                    culprit=name
+                )
+
             encrypted = gpg.encrypt('\n\n\n'.join(content), idents, armor='always')
             if not encrypted.ok:
                 raise Error(
