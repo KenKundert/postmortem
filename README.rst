@@ -2,6 +2,9 @@ PostMortem: Generates Packets of Useful Information for Partners and Dependents 
 =======================================================================================================
 
 
+.. image:: https://pepy.tech/badge/postmortem/month
+    :target: https://pepy.tech/project/postmortem
+
 .. image:: https://img.shields.io/pypi/v/postmortem.svg
     :target: https://pypi.python.org/pypi/postmortem
 
