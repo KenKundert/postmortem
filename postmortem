@@ -30,7 +30,7 @@ from appdirs import user_config_dir
 from avendesora import PasswordGenerator, PasswordError
 from docopt import docopt
 from inform import (
-    Error, conjoin, cull, display, fatal, full_stop, indent, os_error, 
+    Error, conjoin, cull, display, fatal, full_stop, indent, join, os_error, 
     terminate, warn, is_str, is_mapping, is_collection, is_str
 )
 import nestedtext as nt
@@ -47,10 +47,13 @@ config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
 __version__ = '0.7.2'
 __released__ = '2021-04-12'
+now = arrow.now()
+
 
 # avendesora_header {{{3
-avendesora_header = dedent('''
+avendesora_header = dedent("""
     # Exported Avendesora Accounts
+    # {date}
     #
     # To adopt these accounts, you should copy this file into your existing
     # Avendesora directory: ~/.config/avendesora (you can rename this file
@@ -69,22 +72,30 @@ avendesora_header = dedent('''
     # Imports {fold}1
     from avendesora import (
         # Basics
-        Account, Hide, Hidden, GPG, Script,
-
-        # Character sets
-        exclude, LOWERCASE, UPPERCASE, LETTERS, DIGITS, ALPHANUMERIC,
-        HEXDIGITS, PUNCTUATION, SYMBOLS, WHITESPACE, PRINTABLE, DISTINGUISHABLE,
-
-        # Secrets
-        Password, Passphrase, PIN, Question, MixedPassword, PasswordRecipe,
-        BirthDate, OTP,
+        Account, Hidden, Question, Script, WriteFile, OTP,
 
         # Account Discovery
         RecognizeAll, RecognizeAny, RecognizeTitle, RecognizeURL, RecognizeCWD,
         RecognizeHost, RecognizeUser, RecognizeEnvVar, RecognizeNetwork,
         RecognizeFile
     )
-''').format(fold='{''{''{')
+
+    # Accounts {fold}1
+""").lstrip().format(fold='{''{''{', date=now.format('D MMMM YYYY'))
+
+# avendesora_footer {{{3
+avendesora_footer = join(
+    '\n# vim:',
+    'filetype=python',
+    'sw=4',
+    'sts=4',
+    'et',
+    'ai',
+    'ff=unix',
+    'fileencoding=utf-8',
+    'foldmethod=marker',
+    ':'
+)
 
 # unpack_script {{{3
 unpack_script = dedent('''
@@ -116,18 +127,18 @@ outer_readme_contents = dedent('''
         ./unpack <yourname>-<date>.tgz.gpg
 
     It will create a directory <yourname>-<date> that contains your information.
-    This directory contains sensitive information, so keep it secure.  
+    This directory contains sensitive information, so keep it secure.
     I recommend that you just copy out the information you need, then delete it.
 ''').lstrip()
 inner_readme_contents = dedent('''
-    The accounts.gpg file contains information about those of my accounts that 
-    are relevant to you.  All passwords and other secrets are expanded as of the 
-    time this file was created.  Time-based one-time password codes are included 
+    The accounts.gpg file contains information about those of my accounts that
+    are relevant to you.  All passwords and other secrets are expanded as of the
+    time this file was created.  Time-based one-time password codes are included
     but will be out-of-date and useless.
 
-    The avendesora_accounts.gpg file contains the same information, but in 
-    a form that can be imported into Avendesora. To do so, follow the 
-    instructions at the top of the file.  Once imported, the time-based one-time 
+    The avendesora_accounts.gpg file contains the same information, but in
+    a form that can be imported into Avendesora. To do so, follow the
+    instructions at the top of the file.  Once imported, the time-based one-time
     passwords will be generated correctly by Avendesora.
 ''').lstrip()
 
@@ -242,14 +253,12 @@ schema = Schema(
 
 
 try:
-    now = arrow.now()
-
     # Read settings {{{1
     config_filepath = to_path(user_config_dir(prog_name), config_filename)
     if config_filepath.exists():
 
         # load from file
-        settings = nt.load(config_filepath)
+        settings = nt.load(config_filepath, keymap=(keymap:={}))
 
         # expand macros
         settings = expand_settings(settings)
@@ -413,7 +422,11 @@ try:
 
         # generates avendesora_accounts.gpg
         if name in avendesora_accounts:
-            content = [avendesora_header.strip()] + avendesora_accounts[name]
+            content = (
+                [avendesora_header] +
+                avendesora_accounts[name] +
+                [avendesora_footer]
+            )
             num_accounts = len(avendesora_accounts[name])
             encrypted = gpg.encrypt('\n\n'.join(content), idents, armor='always')
             if not encrypted.ok:
@@ -496,9 +509,12 @@ except KeyboardInterrupt:
 except nt.NestedTextError as e:
     e.terminate()
 except Invalid as e:
-    paths = '.'.join(e.path)
-    msg = f'{paths}: {e.msg}'
-    fatal(full_stop(msg), culprit=config_filepath)
+    kind = 'key' if 'key' in e.msg else 'value'
+    loc = keymap[tuple(e.path)]
+    fatal(
+        f"{'.'.join(str(p) for p in e.path)}: {full_stop(e.msg)}",
+        codicil = loc.as_line(kind)
+    )
 except (PasswordError, Error) as e:
     e.terminate()
 except OSError as e:
