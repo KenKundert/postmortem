@@ -45,8 +45,8 @@ import gnupg
 prog_name = 'postmortem'
 config_filename = 'config.nt'
 shlib_set_prefs(use_inform=True)
-__version__ = '0.7.2'
-__released__ = '2021-04-12'
+__version__ = '0.8.0'
+__released__ = '2021-08-10'
 now = arrow.now()
 
 
