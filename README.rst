@@ -210,6 +210,10 @@ Latest Development Version
     | Version: 0.7.2
     | Released: 2021-04-12
 
+0.8 (2021-08-10)
+    - Improve error reporting.
+    - Allow each recipient to pull from multiple categories.
+
 0.7 (2021-01-03)
     - Miscellaneous refinements.
 
