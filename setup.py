@@ -32,6 +32,7 @@ setup(
         'voluptuous',
     ],
     python_requires='>=3.6',
+    zip_safe = True,
     keywords = 'postmortem'.split(),
     classifiers = [
         'Development Status :: 5 - Production/Stable',
