@@ -31,7 +31,7 @@ setup(
             # user will probably have compatibility issues.
         'voluptuous',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     zip_safe = True,
     keywords = 'postmortem'.split(),
     classifiers = [
@@ -41,10 +41,9 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Utilities',
     ],
 )

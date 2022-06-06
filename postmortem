@@ -25,6 +25,22 @@ You can unpack an encrypted output file using::
     gpg -d -o - name.tgz.gpg | tar xzf -
 """
 
+# License {{{1
+# Copyright (C) 2016-2022 Kenneth S. Kundert
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see http://www.gnu.org/licenses/.
+
 # Imports {{{1
 from appdirs import user_config_dir
 from avendesora import PasswordGenerator, PasswordError
@@ -164,7 +180,7 @@ def expand_settings(value):
     if is_str(value):
         value = value.strip()
         if value[:1] == '@':
-            value = settings[value[1:].strip()]
+            value = settings[normalize(value[1:])]
         return value
     if is_mapping(value):
         return {k:expand_settings(v) for k, v in value.items()}
@@ -180,9 +196,9 @@ def to_str(arg):
 
 def to_ident(arg):
     arg = to_str(arg)
-    if len(arg.split()) > 1:
-        raise Invalid('expected simple identifier.')
-    return arg
+    if arg.isidentifier():
+        return arg
+    raise Invalid('expected simple identifier')
 
 def to_int(arg):
     try:
@@ -226,23 +242,27 @@ def to_gpg_id(arg):
 def to_gpg_ids(arg):
     return [to_gpg_id(i) for i in to_list(arg)]
 
+def normalize(key, *args):
+    return '_'.join(key.strip().lower().split()) if type(key) == str else key
+
+
 # schema {{{2
 schema = Schema(
     {
-        Required('my gpg ids'): to_gpg_ids,
-        'sign with': to_gpg_id,
-        Required('avendesora gpg passphrase account'): to_str,
-        'avendesora gpg passphrase field': to_str,
-        'name template': to_str,
+        Required('my_gpg_ids'): to_gpg_ids,
+        'sign_with': to_gpg_id,
+        Required('avendesora_gpg_passphrase_account'): to_str,
+        'avendesora_gpg_passphrase_field': to_str,
+        'name_template': to_str,
         'cc': to_list,
         'salutation': to_str,
         Required('recipients'): {
             Extra: {
                 Required('categories'): to_set,
                 Required('email'): to_emails,
-                'gpg id': to_gpg_id,
+                'gpg_id': to_gpg_id,
                 'attach': to_paths,
-                'networth': to_ident,
+                'networth': to_str,
                 'salutation': to_str,
                 'accounts': to_int,
             }
@@ -250,6 +270,9 @@ schema = Schema(
     },
     extra = REMOVE_EXTRA
 )
+voluptuous_error_msg_mapings = {
+    'extra keys not allowed': 'unknown key',
+}
 
 
 try:
@@ -258,9 +281,11 @@ try:
     if config_filepath.exists():
 
         # load from file
-        settings = nt.load(config_filepath, keymap=(keymap:={}))
+        settings = nt.load(
+            config_filepath, keymap=(locmap:={}), normalize_key=normalize
+        )
 
-        # expand macros
+        # expand references
         settings = expand_settings(settings)
 
         # check settings and transform to desired types
@@ -509,10 +534,11 @@ except KeyboardInterrupt:
 except nt.NestedTextError as e:
     e.terminate()
 except Invalid as e:
-    kind = 'key' if 'key' in e.msg else 'value'
-    loc = keymap[tuple(e.path)]
+    msg = voluptuous_error_msg_mapings.get(e.msg, e.msg)
+    kind = 'key' if 'key' in msg else 'value'
+    loc = locmap[keymap[tuple(e.path)]]
     fatal(
-        f"{'.'.join(str(p) for p in e.path)}: {full_stop(e.msg)}",
+        f"{'.'.join(str(p) for p in e.path)}: {full_stop(msg)}",
         codicil = loc.as_line(kind)
     )
 except (PasswordError, Error) as e:
