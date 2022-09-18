@@ -1,0 +1,14 @@
+major: 0
+minor: 8
+patch: 0
+revision: 0
+type: release
+files:
+    setup.py:
+        version: version
+    postmortem:
+        version: __version__
+        date: __released__
+    README.rst:
+        version: Version
+        date: Released
