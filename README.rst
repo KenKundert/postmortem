@@ -1,5 +1,5 @@
-PostMortem: Generates Packets of Useful Information for Partners and Dependents to be Opened Upon Death
-=======================================================================================================
+PostMortem — Generates Packets of Useful Information for Partners and Dependents to be Opened Upon Death
+========================================================================================================
 
 
 .. image:: https://pepy.tech/badge/postmortem/month
