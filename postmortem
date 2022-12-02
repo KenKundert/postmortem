@@ -536,7 +536,7 @@ except nt.NestedTextError as e:
 except Invalid as e:
     msg = voluptuous_error_msg_mapings.get(e.msg, e.msg)
     kind = 'key' if 'key' in msg else 'value'
-    loc = locmap[keymap[tuple(e.path)]]
+    loc = locmap[tuple(e.path)]
     fatal(
         f"{'.'.join(str(p) for p in e.path)}: {full_stop(msg)}",
         codicil = loc.as_line(kind)
