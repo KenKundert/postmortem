@@ -156,6 +156,9 @@ inner_readme_contents = dedent('''
     a form that can be imported into Avendesora. To do so, follow the
     instructions at the top of the file.  Once imported, the time-based one-time
     passwords will be generated correctly by Avendesora.
+
+    I recommend that you attempt to access the GPG files contained in this
+    package to assure that you will be able to when you need them.
 ''').lstrip()
 
 # defaults {{{2
